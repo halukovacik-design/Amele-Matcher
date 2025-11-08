@@ -148,6 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9fc0581f5d014f14b030fb0b2a7b286, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InputManager
+  outlineMaterial: {fileID: 2100000, guid: 5f584b3c76b1644d68ec4b6813522351, type: 2}
 --- !u!4 &155060084
 Transform:
   m_ObjectHideFlags: 0
@@ -396,6 +397,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a8195dc217cf4b3e84210ed407c3dd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Item
+  render: {fileID: 1056897695}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

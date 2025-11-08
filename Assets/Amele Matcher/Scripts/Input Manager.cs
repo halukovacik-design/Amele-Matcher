@@ -4,6 +4,11 @@ using System;
 public class InputManager : MonoBehaviour
 {
     public static Action<Item> itemClicked;
+
+    [Header("Settings")]
+    [SerializeField] private Material outlineMaterial;
+    private Item currentItem;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -13,23 +18,52 @@ public class InputManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
-            HandleMouseDown();
+        if (Input.GetMouseButton(0))
+            HandleDrag();
+        else if (Input.GetMouseButtonUp(0))
+            HandlemouseUp();
     }
-    
-    private void HandleMouseDown()
+
+    private void HandleDrag()
     {
         Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, 100);
 
         if (hit.collider == null)
+        {
+            DeselectCurrentItem();
             return;
+        }
 
         if (!hit.collider.TryGetComponent(out Item item))
+        {
+            DeselectCurrentItem();
+            return;
+        }
+
+        DeselectCurrentItem();
+
+        currentItem = item;
+        currentItem.Select(outlineMaterial);
+        //itemClicked?.Invoke(item);
+
+    }
+
+    private void DeselectCurrentItem()
+    {
+        if (currentItem != null)
+            currentItem.Deselect();
+
+            currentItem = null;
+        
+    }
+    private void HandlemouseUp()
+    {
+        if (currentItem == null)
             return;
 
-        Debug.Log("We've clicked on : " + hit.collider.name);
-            
-        itemClicked?.Invoke(item);
-        
+        currentItem.Deselect();
+
+        itemClicked?.Invoke(currentItem);
+        currentItem = null;
     }
 }
