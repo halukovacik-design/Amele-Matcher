@@ -1,7 +1,9 @@
 using UnityEngine;
+using System;
 
 public class InputManager : MonoBehaviour
 {
+    public static Action<Item> itemClicked;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -13,9 +15,6 @@ public class InputManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
             HandleMouseDown();
-
-        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
-            HandleMouseDown();
     }
     
     private void HandleMouseDown()
@@ -24,8 +23,13 @@ public class InputManager : MonoBehaviour
 
         if (hit.collider == null)
             return;
-        
-            Debug.Log("We've clicked on : " + hit.collider.name);
+
+        if (!hit.collider.TryGetComponent(out Item item))
+            return;
+
+        Debug.Log("We've clicked on : " + hit.collider.name);
+            
+        itemClicked?.Invoke(item);
         
     }
 }
