@@ -1,11 +1,12 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody), typeof(SphereCollider))]
+[RequireComponent(typeof(Rigidbody))]
 
 public class Item : MonoBehaviour
 {
     [Header("Elements")]
     [SerializeField] private Renderer render;
+    [SerializeField] private Collider collid;
     private Material baseMaterial;
 
     private void Awake()
@@ -19,7 +20,7 @@ public class Item : MonoBehaviour
     public void DisablePhysics()
     {
         GetComponent<Rigidbody>().isKinematic = true;
-        GetComponent<Collider>().enabled = false;
+        collid.enabled = false;
     }
 
     public void Select(Material outlineMaterial)
