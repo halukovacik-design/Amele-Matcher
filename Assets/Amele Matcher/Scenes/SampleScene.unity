@@ -664,7 +664,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a2d0c560384f41f5be20ad13cd2d043, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemSpotsManager
-  itemSpot: {fileID: 867054716}
+  itemSpotParent: {fileID: 2143920063}
   itemLocalPositionOnSpot: {x: 0, y: 0.09, z: 0}
   itemLocalScaleOnSpot: {x: 0.25, y: 0.25, z: 0.25}
 --- !u!4 &770700661
