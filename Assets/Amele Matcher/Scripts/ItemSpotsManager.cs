@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using System.Collections.Generic;
+using NUnit.Framework;
 
 public class ItemSpotsManager : MonoBehaviour
 {
@@ -10,6 +12,10 @@ public class ItemSpotsManager : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private Vector3 itemLocalPositionOnSpot;
     [SerializeField] private Vector3 itemLocalScaleOnSpot;
+    private bool isBusy;
+
+    [Header("Data")]
+    private Dictionary<EItemName, ItemMergeData> itemMergeDataDictionary = new Dictionary<EItemName, ItemMergeData>();
 
     private void Awake()
     {
@@ -35,11 +41,20 @@ public class ItemSpotsManager : MonoBehaviour
     }
     private void OnItemClicked(Item item)
     {
+        if(isBusy)
+        {
+            Debug.LogWarning("ItemSpotsManager is busy! Amele seni...");
+            return;
+        }
         if (!IsFreeSpotsAvailable())
         {
             Debug.LogWarning("No free item spots available! Game Over AMELEEE!");
             return;
         }
+
+        // Simdi busy oldugumuz icin item ile senaryomuzu isleyebiliriz
+        isBusy = true;
+
 
         HandleItemClicked(item);
         
@@ -47,7 +62,15 @@ public class ItemSpotsManager : MonoBehaviour
 
     private void HandleItemClicked(Item item)
     {
-        MoveItemFirstFreeSpot(item);
+        if (itemMergeDataDictionary.ContainsKey(item.ItemName))
+            HandleItemMergeDataFound(item);
+        else
+            MoveItemFirstFreeSpot(item);
+    }
+
+    private void HandleItemMergeDataFound(Item item)
+    {
+        throw new NotImplementedException();
     }
 
     private void MoveItemFirstFreeSpot(Item item)
@@ -60,6 +83,8 @@ public class ItemSpotsManager : MonoBehaviour
             return;
         }
 
+        CreateItemMergeData(item);
+        
         targetSpot.Populate(item);
         
 
@@ -73,8 +98,28 @@ public class ItemSpotsManager : MonoBehaviour
 
         // 4, disable the collider of the item to prevent further clicks + physics featues
         item.DisablePhysics();
+
+        HandleFirstItemReachedSpot(item);
     }
-    
+
+    private void HandleFirstItemReachedSpot(Item item)
+    {
+        CheckForGameOver();
+    }
+
+    private void CheckForGameOver()
+    {
+        if (GetFreeSpot() == null)
+            Debug.LogWarning("Game Over AMELE!");
+        else
+            isBusy = false;
+    }
+
+    private void CreateItemMergeData(Item item)
+    {
+        itemMergeDataDictionary.Add(item.ItemName, new ItemMergeData(item));
+    }
+
     private ItemSpot GetFreeSpot()
     {
         for (int i = 0; i < spots.Length; i++)

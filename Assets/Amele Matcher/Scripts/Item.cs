@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class Item : MonoBehaviour
 {
+    [Header("Data")]
+    [SerializeField] private EItemName itemName;
+    public EItemName ItemName => itemName;
+    
     [Header("Elements")]
     [SerializeField] private Renderer render;
     [SerializeField] private Collider collid;
