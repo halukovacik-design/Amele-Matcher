@@ -22,6 +22,8 @@ public class ItemSpot : MonoBehaviour
     {
         this.item = item;
         item.transform.SetParent(transform);
+
+        item.AssignSpot(this);
     }
     public bool isEmpty()
     {

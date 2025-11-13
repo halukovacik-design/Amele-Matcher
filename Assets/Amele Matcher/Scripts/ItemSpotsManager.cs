@@ -70,6 +70,63 @@ public class ItemSpotsManager : MonoBehaviour
 
     private void HandleItemMergeDataFound(Item item)
     {
+        ItemSpot idealSpot = GetIdealSpotFor(item);
+
+        itemMergeDataDictionary[item.ItemName].Add(item);
+
+        TryMoveItemToIdealSpot(item, idealSpot);
+    }
+
+    private ItemSpot GetIdealSpotFor(Item item)
+    {
+        List<Item> items = itemMergeDataDictionary[item.ItemName].items;
+        List<ItemSpot> itemSpots = new List<ItemSpot>();
+
+        for (int i = 0; i < items.Count; i++)
+            itemSpots.Add(items[i].Spot);
+
+        // itemler gibi kullanilan spotların da listesi var artık
+
+        // eger bir spot varsa, basitce siradakini kullanmali.. abv!
+        if (itemSpots.Count >= 2)
+            itemSpots.Sort((a, b) => b.transform.GetSiblingIndex().CompareTo(a.transform.GetSiblingIndex()));
+
+        int IdealSpotIndex = itemSpots[0].transform.GetSiblingIndex() + 1;
+
+        return spots[IdealSpotIndex];
+    }
+    
+    private void TryMoveItemToIdealSpot(Item item, ItemSpot idealSpot)
+    {
+        if (!idealSpot.isEmpty())
+        {
+            HandleIdealSpotFull(item, idealSpot);
+            return;
+        }
+        
+        MoveItemToSpot(item, idealSpot);
+    }
+
+    private void MoveItemToSpot(Item item, ItemSpot targetSpot)
+    {
+        targetSpot.Populate(item);
+        
+        // sonra 2, scale the item down and set its local position to 0,0,0
+        item.transform.localPosition = itemLocalPositionOnSpot;
+        item.transform.localScale = itemLocalScaleOnSpot;
+        item.transform.localRotation = Quaternion.identity;
+
+        // 3, disable the shadow of the item
+        item.DisableShadow();
+
+        // 4, disable the collider of the item to prevent further clicks + physics featues
+        item.DisablePhysics();
+
+        HandleFirstItemReachedSpot(item);
+    }
+
+    private void HandleIdealSpotFull(Item item, ItemSpot idealSpot)
+    {
         throw new NotImplementedException();
     }
 

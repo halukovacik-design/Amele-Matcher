@@ -7,6 +7,9 @@ public class Item : MonoBehaviour
     [Header("Data")]
     [SerializeField] private EItemName itemName;
     public EItemName ItemName => itemName;
+
+    private ItemSpot spot;
+    public ItemSpot Spot => spot;
     
     [Header("Elements")]
     [SerializeField] private Renderer render;
@@ -17,6 +20,10 @@ public class Item : MonoBehaviour
     {
         baseMaterial = render.material;
     }
+
+    public void AssignSpot(ItemSpot spot)
+        => this.spot = spot;
+
     public void DisableShadow()
     {
         render.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;

@@ -13,4 +13,9 @@ public struct ItemMergeData
         items = new List<Item>();
         items.Add(firstItem);
     }
+
+    public void Add(Item item)
+    {
+        items.Add(item);
+    }
 }
