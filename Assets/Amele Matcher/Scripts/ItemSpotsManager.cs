@@ -2,6 +2,8 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using NUnit.Framework;
+using System.Data;
+using UnityEngine.XR;
 
 public class ItemSpotsManager : MonoBehaviour
 {
@@ -16,6 +18,12 @@ public class ItemSpotsManager : MonoBehaviour
 
     [Header("Data")]
     private Dictionary<EItemName, ItemMergeData> itemMergeDataDictionary = new Dictionary<EItemName, ItemMergeData>();
+
+
+    [Header("Animation Settings")]
+    [SerializeField] private float animationDuration;
+    [SerializeField] private LeanTweenType animationEasing;
+
 
     private void Awake()
     {
@@ -110,25 +118,32 @@ public class ItemSpotsManager : MonoBehaviour
     private void MoveItemToSpot(Item item, ItemSpot targetSpot, Action completeCallback)
     {
         targetSpot.Populate(item);
-        
+
         // sonra 2, scale the item down and set its local position to 0,0,0
-        item.transform.localPosition = itemLocalPositionOnSpot;
-        item.transform.localScale = itemLocalScaleOnSpot;
-        item.transform.localRotation = Quaternion.identity;
+        //item.transform.localPosition = itemLocalPositionOnSpot;
+        //item.transform.localScale = itemLocalScaleOnSpot;
+        //item.transform.localRotation = Quaternion.identity;
+
+        LeanTween.moveLocal(item.gameObject, itemLocalPositionOnSpot, animationDuration)
+            .setEase(animationEasing);
+
+        LeanTween.scale(item.gameObject, itemLocalScaleOnSpot, animationDuration)
+            .setEase(animationEasing);
+
+        LeanTween.rotateLocal(item.gameObject, Vector3.zero, animationDuration)
+            .setOnComplete(completeCallback);
 
         // 3, disable the shadow of the item
         item.DisableShadow();
 
         // 4, disable the collider of the item to prevent further clicks + physics featues
         item.DisablePhysics();
-
-        completeCallback?.Invoke();
-        
-        //HandleItemReachedSpot(item, checkForMerge);
     }
 
     private void HandleItemReachedSpot(Item item, bool checkForMerge = true)
     {
+        item.Spot.BumpDown();
+        
         if(!checkForMerge)
             return;
          
@@ -151,14 +166,19 @@ public class ItemSpotsManager : MonoBehaviour
             Destroy(items[i].gameObject);
         }
 
-        MoveAllItemsToTheLeft();
+        if (itemMergeDataDictionary.Count <= 0)
+            isBusy = false;
+        else
+            MoveAllItemsToTheLeft(HandleAllItemsMovedToTheLeft);
 
         // itemleri sola dayama eklendikten sonra burayı silecegiz
         //isBusy = false;
     }
 
-    private void MoveAllItemsToTheLeft()
+    private void MoveAllItemsToTheLeft(Action completeCallback)
     {
+        bool callbackTriggered = false;
+
         for (int i = 3; i < spots.Length; i++)
         {
             ItemSpot spot = spots[i];
@@ -179,11 +199,16 @@ public class ItemSpotsManager : MonoBehaviour
 
             spot.Clear();
 
-            MoveItemToSpot(item, targetSpot, () => HandleItemReachedSpot(item, false));
+            completeCallback += () => HandleItemReachedSpot(item, false);
+            MoveItemToSpot(item, targetSpot, completeCallback);
+
+            callbackTriggered = true;
         }
         
-        HandleAllItemsMovedToTheLeft();
-
+        if (!callbackTriggered)
+        {
+            completeCallback?.Invoke();
+        }
     }
 
     private void HandleAllItemsMovedToTheLeft()
@@ -246,6 +271,8 @@ public class ItemSpotsManager : MonoBehaviour
 
     private void HandleFirstItemReachedSpot(Item item)
     {
+        item.Spot.BumpDown();
+        
         CheckForGameOver();
     }
 
