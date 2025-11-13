@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 public struct ItemMergeData
 {
-    public string itemName;
+    public EItemName itemName;
     public List<Item> items;
 
     public ItemMergeData(Item firstItem)
     {
-        itemName = firstItem.name;
+        itemName = firstItem.ItemName;
 
         items = new List<Item>();
         items.Add(firstItem);
@@ -17,5 +17,10 @@ public struct ItemMergeData
     public void Add(Item item)
     {
         items.Add(item);
+    }
+
+    public bool CanMergeItems()
+    {
+        return items.Count >= 3;
     }
 }

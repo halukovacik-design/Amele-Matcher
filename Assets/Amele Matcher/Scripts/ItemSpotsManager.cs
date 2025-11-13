@@ -107,7 +107,7 @@ public class ItemSpotsManager : MonoBehaviour
         MoveItemToSpot(item, idealSpot);
     }
 
-    private void MoveItemToSpot(Item item, ItemSpot targetSpot)
+    private void MoveItemToSpot(Item item, ItemSpot targetSpot, bool checkForMerge = true)
     {
         targetSpot.Populate(item);
         
@@ -122,12 +122,72 @@ public class ItemSpotsManager : MonoBehaviour
         // 4, disable the collider of the item to prevent further clicks + physics featues
         item.DisablePhysics();
 
-        HandleFirstItemReachedSpot(item);
+        HandleItemReachedSpot(item, checkForMerge);
+    }
+
+    private void HandleItemReachedSpot(Item item, bool checkForMerge = true)
+    {
+        if(!checkForMerge)
+            return;
+         
+        if (itemMergeDataDictionary[item.ItemName].CanMergeItems())
+            MergeItems(itemMergeDataDictionary[item.ItemName]);
+        else
+            CheckForGameOver();
+    }
+
+    private void MergeItems(ItemMergeData itemMergeData)
+    {
+        List<Item> items = itemMergeData.items;
+
+        // removing items from dictionary ama spotlar da clearlenmeli
+        itemMergeDataDictionary.Remove(itemMergeData.itemName);
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            items[i].Spot.Clear();
+            Destroy(items[i].gameObject);
+        }
+
+        // itemleri sola dayama eklendikten sonra burayı silecegiz
+        isBusy = false;
     }
 
     private void HandleIdealSpotFull(Item item, ItemSpot idealSpot)
     {
-        throw new NotImplementedException();
+        MoveAllItemsToTheRight(idealSpot, item);
+    }
+
+    private void MoveAllItemsToTheRight(ItemSpot idealSpot, Item itemToPlace)
+    {
+        int spotIndex = idealSpot.transform.GetSiblingIndex();
+
+        for (int i = spots.Length - 2; i >= spotIndex; i--)
+        {
+
+            ItemSpot spot = spots[i];
+
+            //double check burayi
+            if (spot.isEmpty())
+                continue;
+
+            Item item = spot.Item;
+
+            spot.Clear();
+
+            ItemSpot targetSpot = spots[i + 1];
+
+            if (!targetSpot.isEmpty())
+            {
+                Debug.LogError("Error, this should not happen! Amele!");
+                isBusy = false;
+                return;
+            }
+
+            MoveItemToSpot(item, targetSpot, false);
+        }
+
+        MoveItemToSpot(itemToPlace, idealSpot);
     }
 
     private void MoveItemFirstFreeSpot(Item item)
