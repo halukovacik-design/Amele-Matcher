@@ -104,10 +104,10 @@ public class ItemSpotsManager : MonoBehaviour
             return;
         }
         
-        MoveItemToSpot(item, idealSpot);
+        MoveItemToSpot(item, idealSpot, () => HandleItemReachedSpot(item));
     }
 
-    private void MoveItemToSpot(Item item, ItemSpot targetSpot, bool checkForMerge = true)
+    private void MoveItemToSpot(Item item, ItemSpot targetSpot, Action completeCallback)
     {
         targetSpot.Populate(item);
         
@@ -122,7 +122,9 @@ public class ItemSpotsManager : MonoBehaviour
         // 4, disable the collider of the item to prevent further clicks + physics featues
         item.DisablePhysics();
 
-        HandleItemReachedSpot(item, checkForMerge);
+        completeCallback?.Invoke();
+        
+        //HandleItemReachedSpot(item, checkForMerge);
     }
 
     private void HandleItemReachedSpot(Item item, bool checkForMerge = true)
@@ -149,7 +151,43 @@ public class ItemSpotsManager : MonoBehaviour
             Destroy(items[i].gameObject);
         }
 
+        MoveAllItemsToTheLeft();
+
         // itemleri sola dayama eklendikten sonra burayı silecegiz
+        //isBusy = false;
+    }
+
+    private void MoveAllItemsToTheLeft()
+    {
+        for (int i = 3; i < spots.Length; i++)
+        {
+            ItemSpot spot = spots[i];
+
+            if (spot.isEmpty())
+                continue;
+
+            Item item = spot.Item;
+
+            ItemSpot targetSpot = spots[i - 3];
+
+            if (!targetSpot.isEmpty())
+            {
+                Debug.LogWarning($"{targetSpot.name} is full");
+                isBusy = false;
+                return;
+            }
+
+            spot.Clear();
+
+            MoveItemToSpot(item, targetSpot, () => HandleItemReachedSpot(item, false));
+        }
+        
+        HandleAllItemsMovedToTheLeft();
+
+    }
+
+    private void HandleAllItemsMovedToTheLeft()
+    {
         isBusy = false;
     }
 
@@ -184,10 +222,11 @@ public class ItemSpotsManager : MonoBehaviour
                 return;
             }
 
-            MoveItemToSpot(item, targetSpot, false);
+            MoveItemToSpot(item, targetSpot, () => HandleItemReachedSpot(item, false));
         }
 
-        MoveItemToSpot(itemToPlace, idealSpot);
+        MoveItemToSpot(itemToPlace, idealSpot, () => HandleItemReachedSpot(itemToPlace));
+
     }
 
     private void MoveItemFirstFreeSpot(Item item)
@@ -201,22 +240,8 @@ public class ItemSpotsManager : MonoBehaviour
         }
 
         CreateItemMergeData(item);
-        
-        targetSpot.Populate(item);
-        
 
-        // sonra 2, scale the item down and set its local position to 0,0,0
-        item.transform.localPosition = itemLocalPositionOnSpot;
-        item.transform.localScale = itemLocalScaleOnSpot;
-        item.transform.localRotation = Quaternion.identity;
-
-        // 3, disable the shadow of the item
-        item.DisableShadow();
-
-        // 4, disable the collider of the item to prevent further clicks + physics featues
-        item.DisablePhysics();
-
-        HandleFirstItemReachedSpot(item);
+        MoveItemToSpot(item, targetSpot, () => HandleFirstItemReachedSpot(item));
     }
 
     private void HandleFirstItemReachedSpot(Item item)
